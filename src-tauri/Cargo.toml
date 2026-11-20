@@ -1,0 +1,49 @@
+[package]
+name = "sd-card-photo-importer"
+version = "0.1.6"
+description = "Safe cross-platform photo importer for paired SD cards"
+authors = ["Glamour Dental Care"]
+edition = "2024"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+# The `_lib` suffix may seem redundant but it is necessary
+# to make the lib name unique and wouldn't conflict with the bin name.
+# This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
+name = "sd_card_photo_importer_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["tray-icon"] }
+tauri-plugin-autostart = "2"
+tauri-plugin-dialog = "2"
+tauri-plugin-opener = "2"
+base64 = "0.22"
+blake3 = "1"
+chrono = { version = "0.4", features = ["serde"] }
+ed25519-dalek = { version = "2", features = ["rand_core"] }
+kamadak-exif = "0.6"
+rand_core = { version = "0.6", features = ["getrandom"] }
+rusqlite = { version = "0.32", features = ["bundled"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+uuid = { version = "1", features = ["v4", "serde"] }
+walkdir = "2"
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.59", features = [
+  "Win32_Devices_DeviceAndDriverInstallation",
+  "Win32_Foundation",
+  "Win32_Security",
+  "Win32_Storage_FileSystem",
+  "Win32_System_IO",
+  "Win32_System_Ioctl",
+] }
+
+[dev-dependencies]
+tempfile = "3"

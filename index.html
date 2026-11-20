@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="/src/styles.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SD Card Media Importer</title>
+    <script type="module" src="/src/main.ts" defer></script>
+  </head>
+
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div class="brand"><div class="brand-mark" aria-hidden="true"><span></span><span></span></div><div><p class="eyebrow">PHOTO INTAKE</p><h1>SD Card Importer</h1></div></div>
+        <div class="topbar-meta"><span class="version-badge" id="app-version" aria-label="應用程式版本">讀取版本中</span><div class="service-state" id="service-state" role="status" aria-live="polite" aria-atomic="true"><span class="status-dot"></span><span id="service-label">啟動監聽中</span></div></div>
+      </header>
+      <section class="hero">
+        <div><p class="eyebrow">DEVELOPMENT MILESTONE 01</p><h2>安全地把每一次拍攝，送到正確的位置。</h2><p class="hero-copy">目前可選擇資料夾模擬 SD 卡，完成配對、掃描、驗證與匯入。實體插卡自動偵測將沿用同一套核心流程。</p></div>
+        <label class="autostart-control"><span><strong>登入後自動啟動</strong><small>關閉視窗後仍在背景運行</small></span><input id="autostart" type="checkbox" /><i aria-hidden="true"></i></label>
+      </section>
+      <section class="workflow-grid">
+        <article class="card source-card">
+          <div class="card-heading"><span class="step-number">01</span><div><h3>選擇記憶卡</h3><p>選擇包含 DCIM、AVCHD、M4ROOT 或 CONTENTS 的來源</p></div></div>
+          <button class="path-picker" id="select-source" type="button"><span class="picker-icon">↗</span><span class="path-copy"><strong>選擇來源</strong><small id="source-path">尚未選擇</small></span></button>
+          <div class="trust-panel" id="trust-panel"><span class="trust-icon">—</span><div><strong id="trust-title">等待記憶卡</strong><p id="trust-detail">選擇來源後會先驗證簽章配對檔。</p></div></div>
+          <button class="secondary-button" id="verify-card" type="button" disabled>驗證配對</button>
+        </article>
+        <article class="card pairing-card">
+          <div class="card-heading"><span class="step-number">02</span><div><h3>信任與格式設定</h3><p>未知卡首次信任；舊卡可更新格式白名單</p></div></div>
+          <label class="field"><span>卡片名稱</span><input id="card-name" type="text" value="相機 A / SD-01" autocomplete="off" /></label>
+          <div class="format-picker">
+            <div class="format-picker-heading"><span>允許格式</span><button id="toggle-all-formats" type="button">取消全選</button></div>
+            <p id="format-summary" class="format-summary" aria-live="polite">正在讀取支援格式…</p>
+            <details class="format-details">
+              <summary>檢視與調整格式</summary>
+              <fieldset class="format-fieldset"><legend>一般照片</legend><div id="standard-formats" class="format-options"></div></fieldset>
+              <fieldset class="format-fieldset"><legend>相機 RAW（依品牌）</legend><div id="raw-formats" class="format-options raw-format-options"></div></fieldset>
+              <fieldset class="format-fieldset"><legend>相機影片（依品牌）</legend><div id="video-formats" class="format-options"></div></fieldset>
+            </details>
+          </div>
+          <button class="primary-button" id="initialize-card" type="button" disabled>信任並初始化</button><p class="fine-print">只會建立或更新簽署的配對檔，不會更動照片或影片。</p>
+        </article>
+        <article class="card destination-card">
+          <div class="card-heading"><span class="step-number">03</span><div><h3>設定匯入位置</h3><p>系統會依匯入日期建立單一批次資料夾</p></div></div>
+          <button class="path-picker" id="select-destination" type="button"><span class="picker-icon">↓</span><span class="path-copy"><strong>選擇目的根目錄</strong><small id="destination-path">尚未選擇</small></span></button>
+          <div class="folder-preview"><span>預設建立規則</span><code>{根目錄}/{YYYYMMDD}匯入/{媒體檔}</code></div>
+          <button class="secondary-button" id="scan-card" type="button" disabled>掃描照片與影片</button>
+        </article>
+      </section>
+      <section class="import-console">
+        <div class="console-summary"><div><p class="eyebrow">IMPORT STATUS</p><h3 id="console-title">準備就緒</h3><p id="console-detail">完成記憶卡配對並選擇目的資料夾後即可匯入。</p></div><div class="metrics"><div><strong id="metric-files">0</strong><span>媒體檔案</span></div><div><strong id="metric-size">0 B</strong><span>總容量</span></div><div><strong id="metric-rejected">0</strong><span>已阻擋</span></div></div></div>
+        <div class="progress-track" aria-hidden="true"><span id="progress-bar"></span></div>
+        <div class="console-actions"><p id="activity-log" role="status">等待操作</p><button class="import-button" id="import-card" type="button" disabled><span>開始安全匯入</span><b>→</b></button></div>
+      </section>
+      <section class="import-list" id="import-list" hidden aria-labelledby="import-list-title">
+        <div class="import-list-heading">
+          <div><p class="eyebrow">IMPORT DETAILS</p><h3 id="import-list-title">匯入清單</h3></div>
+          <p id="import-list-summary" role="status" aria-live="polite"></p>
+        </div>
+        <div class="table-scroll" tabindex="0" aria-label="匯入結果清單，可水平捲動">
+          <table>
+            <thead><tr><th scope="col">檔名</th><th scope="col">建立時間</th><th scope="col">是否屬於可匯入檔案</th><th scope="col">匯入成功與否</th></tr></thead>
+            <tbody id="import-list-body"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
